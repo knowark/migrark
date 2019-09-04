@@ -8,10 +8,15 @@ class Migrator:
         self.versioner = versioner
         self.collector = collector
 
-    def migrate(self):
+    def migrate(self, target='999999') -> None:
         migrations = self.collector.retrieve()
         version = self.versioner.current_version
 
-        for migration in migrations:
-            if migration.version > version:
-                migration.schema_up()
+        if target > version:
+            for migration in migrations:
+                if version < migration.version <= target:
+                    migration.schema_up()
+        elif target < version:
+            for migration in reversed(migrations):
+                if target <= migration.version < version:
+                    migration.schema_down()

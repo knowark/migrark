@@ -26,6 +26,14 @@ def test_memory_migration_schema_up(migration):
     assert migration._schema_up is True
 
 
+def test_memory_migration_schema_down(migration):
+    migration = Migration({'version': '002'})
+
+    migration.schema_down()
+
+    assert migration._schema_down is True
+
+
 def test_custom_migration_version(migration):
     class CustomMigration(Migration):
         @property

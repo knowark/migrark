@@ -40,10 +40,44 @@ def test_migrator_migrate(migrator):
 
 def test_migrator_migrate_to_upper_version(migrator):
     migrator.versioner._version = '002'
+
     migrator.migrate()
 
     migrations = migrator.collector.retrieve()
-
     assert migrations[0]._schema_up is False
     assert migrations[1]._schema_up is False
     assert migrations[2]._schema_up is True
+
+
+def test_migrator_migrate_to_target_version(migrator):
+    migrator.migrate('002')
+
+    migrations = migrator.collector.retrieve()
+    assert migrations[0]._schema_up is True
+    assert migrations[1]._schema_up is True
+    assert migrations[2]._schema_up is False
+
+
+def test_migrator_migrate_to_lower_version(migrator):
+    migrator.versioner._version = '002'
+
+    migrator.migrate('001')
+
+    migrations = migrator.collector.retrieve()
+    assert migrations[0]._schema_down is True
+    assert migrations[1]._schema_down is False
+    assert migrations[2]._schema_down is False
+
+
+def test_migrator_migrate_to_equal_version(migrator):
+    migrator.versioner._version = '002'
+
+    migrator.migrate('002')
+
+    migrations = migrator.collector.retrieve()
+    assert migrations[0]._schema_up is False
+    assert migrations[1]._schema_up is False
+    assert migrations[2]._schema_up is False
+    assert migrations[0]._schema_down is False
+    assert migrations[1]._schema_down is False
+    assert migrations[2]._schema_down is False
