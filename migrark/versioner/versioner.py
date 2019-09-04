@@ -10,7 +10,7 @@ class Versioner(ABC):
 
 
 class MemoryVersioner(Versioner):
-    def __init__(self, version: str) -> None:
+    def __init__(self, version: str = '') -> None:
         self._version = version
 
     @property

@@ -7,7 +7,11 @@ class Migration:
 
     def __init__(self, context: Dict[str, Any]) -> None:
         self._version = context.get('version', '')
+        self._schema_up = False
 
     @property
     def version(self) -> str:
         return self._version
+
+    def schema_up(self) -> None:
+        self._schema_up = True
