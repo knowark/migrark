@@ -8,12 +8,17 @@ clean:
 test:
 	pytest
 
+mypy: 
+	mypy migrark
+
 COVFILE ?= .coverage
 
 coverage: 
-	mypy migrark
 	export COVERAGE_FILE=$(COVFILE); pytest -x --cov=migrark tests/ \
 	--cov-report term-missing -s -o cache_dir=/tmp/.pytest_cache
+	
+mypy-coverage: mypy coverage
+
 
 PART ?= patch
 

@@ -11,7 +11,7 @@ class Collector(ABC):
 
 
 class MemoryCollector(Collector):
-    def __init__(self, migrations: List[Migration]):
+    def __init__(self, migrations: List[Migration]) -> None:
         self.migrations = migrations
 
     def retrieve(self) -> List[Migration]:

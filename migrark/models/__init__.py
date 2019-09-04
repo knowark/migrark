@@ -1,1 +1,1 @@
-from .migration import Migration, MemoryMigration
+from .migration import Migration

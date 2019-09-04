@@ -9,14 +9,18 @@ def test_collector_methods() -> None:
     assert 'retrieve' in methods
 
 
-# @fixture
-# def memory_collector():
-#     migrations = [
-#         Migration(),
-#         Migration(),
-#         Migration()
-#     ]
-#     return MemoryCollector(migrations)
+@fixture
+def memory_collector():
+    migrations = [
+        Migration({'version': '001'}),
+        Migration({'version': '002'}),
+        Migration({'version': '003'})
+    ]
+    return MemoryCollector(migrations)
 
 
-# def test_memory_collector_retrieve():
+def test_memory_collector_retrieve(memory_collector):
+    migrations = memory_collector.retrieve()
+    assert migrations[0].version == '001'
+    assert migrations[1].version == '002'
+    assert migrations[2].version == '003'

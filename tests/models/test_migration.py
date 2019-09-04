@@ -1,11 +1,11 @@
 from pytest import fixture
-from migrark.models import Migration, MemoryMigration
+from migrark.models import Migration
 
 
 @fixture
 def migration():
     context = {}
-    return MemoryMigration(context)
+    return Migration(context)
 
 
 def test_migration_instantiation(migration):
@@ -13,7 +13,7 @@ def test_migration_instantiation(migration):
 
 
 def test_memory_migration_version(migration):
-    migration = MemoryMigration({}, version='001')
+    migration = Migration({'version': '001'})
 
     assert migration.version == '001'
 
