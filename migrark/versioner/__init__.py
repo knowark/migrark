@@ -1,1 +1,1 @@
-from .versioner import Versioner
+from .versioner import Versioner, MemoryVersioner
