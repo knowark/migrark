@@ -10,7 +10,7 @@ class Migrator:
 
     def migrate(self, target='999999') -> None:
         migrations = self.collector.retrieve()
-        version = self.versioner.current_version
+        version = self.versioner.version
 
         if target > version:
             for migration in migrations:

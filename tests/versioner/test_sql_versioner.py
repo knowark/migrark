@@ -61,3 +61,13 @@ def test_sql_versioner_instantiation_version_table_creation(versioner):
     assert 'id' in columns
     assert 'created_at' in columns
     assert 'version' in columns
+
+
+def test_sql_versioner_get_version(versioner):
+    assert versioner.version == ''
+
+
+def test_sql_versioner_set_version(versioner):
+    versioner.version = '001'
+
+    assert versioner.version == '001'
