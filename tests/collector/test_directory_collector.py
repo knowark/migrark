@@ -7,7 +7,7 @@ from migrark.collector import DirectoryCollector
 
 @fixture
 def directory_collector():
-    context = {'path': str(Path(__file__).parent / 'migrations')}
+    context = {'migrations_path': str(Path(__file__).parent / 'migrations')}
     return DirectoryCollector(context)
 
 

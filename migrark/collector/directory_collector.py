@@ -9,7 +9,7 @@ from .collector import Collector
 class DirectoryCollector(Collector):
     def __init__(self, context: Dict[str, Any]) -> None:
         self.context = context
-        self.path = self.context['path']
+        self.path = self.context['migrations_path']
 
     def retrieve(self) -> List[Migration]:
         migrations = []

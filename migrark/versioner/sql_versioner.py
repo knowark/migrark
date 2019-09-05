@@ -6,14 +6,14 @@ from .versioner import Versioner
 
 class SqlVersioner(Versioner):
     def __init__(self, context: Dict[str, Any]) -> None:
-        self.uri = context['database_uri']
         self.schema = context.get('schema', '__template__')
+        self.connection = context['connection']
         self.table = '__version__'
         self._setup()
 
     @property
     def version(self) -> str:
-        with connect(self.uri) as c, c.cursor() as cursor:
+        with self.connection.cursor() as cursor:
             query = (f"SELECT version FROM {self.schema}.{self.table} "
                      "ORDER BY created_at DESC LIMIT 1")
             cursor.execute(query)
@@ -24,14 +24,14 @@ class SqlVersioner(Versioner):
 
     @version.setter
     def version(self, value: str) -> None:
-        with connect(self.uri) as c, c.cursor() as cursor:
+        with self.connection.cursor() as cursor:
             query = (f"INSERT INTO {self.schema}.{self.table} (version) "
                      "VALUES (%s);")
             parameters = (value,)
             cursor.execute(query, parameters)
 
     def _setup(self) -> None:
-        with connect(self.uri) as c, c.cursor() as cursor:
+        with self.connection.cursor() as cursor:
             cursor.execute(
                 f'CREATE SCHEMA IF NOT EXISTS {self.schema}')
             cursor.execute(

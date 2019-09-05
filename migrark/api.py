@@ -9,8 +9,7 @@ def sql_migrate(database_uri, migrations_path, schema='__template__',
 
     with connect(database_uri) as connection:
         migration_context = {
-            'path': migrations_path,
-            'database_uri': database_uri,
+            'migrations_path': migrations_path,
             'connection': connection,
             'schema': schema
         }

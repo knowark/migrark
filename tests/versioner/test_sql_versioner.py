@@ -7,23 +7,25 @@ pytestmark = mark.sql
 
 
 @fixture
-def versioner(database):
+def versioner_data(database):
     database_uri = f"postgresql://postgres:postgres@localhost/{database}"
+    connection = connect(database_uri)
     context = {
-        'database_uri': database_uri
+        'connection': connection
     }
-    return SqlVersioner(context)
+    return SqlVersioner(context), database_uri
 
 
-def test_sql_versioner_instantiation(versioner, database):
+def test_sql_versioner_instantiation(versioner_data, database):
+    versioner, _ = versioner_data
     assert versioner is not None
-    assert versioner.uri == (
-        f"postgresql://postgres:postgres@localhost/{database}")
     assert versioner.schema == "__template__"
 
 
-def test_sql_versioner_instantiation_schema_creation(versioner):
-    with connect(versioner.uri) as connection:
+def test_sql_versioner_instantiation_schema_creation(versioner_data):
+    versioner, uri = versioner_data
+    versioner.connection.commit()
+    with connect(uri) as connection:
         with connection.cursor() as cursor:
             cursor.execute(
                 'SELECT schema_name FROM information_schema.schemata')
@@ -32,8 +34,10 @@ def test_sql_versioner_instantiation_schema_creation(versioner):
     assert '__template__' in schemas
 
 
-def test_sql_versioner_instantiation_version_table_creation(versioner):
-    with connect(versioner.uri) as connection:
+def test_sql_versioner_instantiation_version_table_creation(versioner_data):
+    versioner, uri = versioner_data
+    versioner.connection.commit()
+    with connect(uri) as connection:
         with connection.cursor() as cursor:
             cursor.execute(
                 "SELECT tablename FROM pg_catalog.pg_tables "
@@ -53,11 +57,14 @@ def test_sql_versioner_instantiation_version_table_creation(versioner):
     assert 'version' in columns
 
 
-def test_sql_versioner_get_version(versioner):
+def test_sql_versioner_get_version(versioner_data):
+    versioner, _ = versioner_data
     assert versioner.version == ''
 
 
-def test_sql_versioner_set_version(versioner):
+def test_sql_versioner_set_version(versioner_data):
+    versioner, _ = versioner_data
     versioner.version = '001'
+    versioner.connection.commit()
 
     assert versioner.version == '001'
