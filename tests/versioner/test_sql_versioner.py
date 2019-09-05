@@ -6,23 +6,13 @@ from migrark.versioner import Versioner, SqlVersioner
 pytestmark = mark.sql
 
 
-@fixture(scope="session")
-def database():
-    database = "migrark"
-    postgres_dsn = f"dbname=postgres user=postgres password=postgres"
-    with connect(postgres_dsn) as connection:
-        connection.autocommit = True
-        with connection.cursor() as cursor:
-            cursor.execute("DROP DATABASE IF EXISTS migrark")
-            cursor.execute("CREATE DATABASE migrark")
-
-    return database
-
-
 @fixture
 def versioner(database):
-    uri = f"postgresql://postgres:postgres@localhost/{database}"
-    return SqlVersioner(uri=uri)
+    database_uri = f"postgresql://postgres:postgres@localhost/{database}"
+    context = {
+        'database_uri': database_uri
+    }
+    return SqlVersioner(context)
 
 
 def test_sql_versioner_instantiation(versioner, database):

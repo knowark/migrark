@@ -16,7 +16,9 @@ class Migrator:
             for migration in migrations:
                 if version < migration.version <= target:
                     migration.schema_up()
+                    self.versioner.version = migration.version
         elif target < version:
             for migration in reversed(migrations):
                 if target <= migration.version < version:
                     migration.schema_down()
+                    self.versioner.version = migration.version

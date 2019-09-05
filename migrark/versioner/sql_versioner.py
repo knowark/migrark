@@ -1,12 +1,13 @@
 from abc import ABC, abstractmethod
+from typing import Dict, Any
 from psycopg2 import connect
 from .versioner import Versioner
 
 
 class SqlVersioner(Versioner):
-    def __init__(self, uri: str, schema='__template__') -> None:
-        self.uri = uri
-        self.schema = schema
+    def __init__(self, context: Dict[str, Any]) -> None:
+        self.uri = context['database_uri']
+        self.schema = context.get('schema', '__template__')
         self.table = '__version__'
         self._setup()
 
