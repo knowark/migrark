@@ -15,7 +15,8 @@ class DirectoryCollector(Collector):
         migrations = []
         for migration_file in Path(self.path).rglob('*.py'):
             migration = self._load_migration_file(migration_file)
-            migrations.append(migration)
+            if migration:
+                migrations.append(migration)
 
         return sorted(migrations, key=lambda m: m.version)
 
@@ -23,5 +24,5 @@ class DirectoryCollector(Collector):
         spec = spec_from_file_location(path.stem, str(path))
         module = module_from_spec(spec)
         spec.loader.exec_module(module)
-
-        return getattr(module, 'Migration')(self.context)
+        migration = getattr(module, 'Migration', None)
+        return migration(self.context) if migration else None
