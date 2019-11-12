@@ -15,7 +15,7 @@ class SqlVersioner(Versioner):
     def version(self) -> str:
         with self.connection.cursor() as cursor:
             query = (f"SELECT version FROM {self.schema}.{self.table} "
-                     "ORDER BY created_at DESC LIMIT 1")
+                     "ORDER BY id DESC LIMIT 1")
             cursor.execute(query)
             result = cursor.fetchone()
             version = result and next(iter(result)) or ''
