@@ -17,6 +17,11 @@ def test_memory_migration_version(migration):
 
     assert migration.version == '001'
 
+def test_memory_migration_connection(migration):
+    migration = Migration({'version': '001'})
+
+    assert migration.connection is None
+
 
 def test_memory_migration_schema_up(migration):
     migration = Migration({'version': '001'})

@@ -1,70 +1,60 @@
-from pytest import fixture, mark
-from psycopg2 import connect
-from migrark.versioner import Versioner, SqlVersioner
-
-
-pytestmark = mark.sql
+from pytest import fixture
+from types import MethodType
+from typing import Sequence, List, Dict, Any
+from migrark.versioner import SqlVersioner
 
 
 @fixture
-def versioner_data(database):
-    database_uri = f"postgresql://postgres:postgres@localhost/{database}"
-    connection = connect(database_uri)
+def versioner(connection):
     context = {
         'connection': connection
     }
-    return SqlVersioner(context), database_uri
+    return SqlVersioner(context)
 
 
-def test_sql_versioner_instantiation(versioner_data, database):
-    versioner, _ = versioner_data
+def test_sql_versioner_instantiation(versioner):
     assert versioner is not None
     assert versioner.schema == "__template__"
+    assert versioner.table == "__version__"
+    assert versioner.placeholder == '${index}'
+    assert versioner.offset == 1
 
 
-def test_sql_versioner_instantiation_schema_creation(versioner_data):
-    versioner, uri = versioner_data
-    versioner.connection.commit()
-    with connect(uri) as connection:
-        with connection.cursor() as cursor:
-            cursor.execute(
-                'SELECT schema_name FROM information_schema.schemata')
-            schemas = [row[0] for row in cursor.fetchall()]
-
-    assert '__template__' in schemas
-
-
-def test_sql_versioner_instantiation_version_table_creation(versioner_data):
-    versioner, uri = versioner_data
-    versioner.connection.commit()
-    with connect(uri) as connection:
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT tablename FROM pg_catalog.pg_tables "
-                "WHERE schemaname = '__template__'")
-            tables = [row[0] for row in cursor.fetchall()]
-
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT column_name "
-                           "FROM information_schema.columns "
-                           "WHERE table_schema = '__template__' "
-                           "AND table_name = '__version__'")
-            columns = [row[0] for row in cursor.fetchall()]
-
-    assert '__version__' in tables
-    assert 'id' in columns
-    assert 'created_at' in columns
-    assert 'version' in columns
+def test_sql_versioner_instantiation_schema_creation(versioner):
+    assert versioner.connection._opened == []
+    assert versioner.connection._closed == []
+    assert versioner.connection._execute_statement == (
+        '''CREATE SCHEMA IF NOT EXISTS __template__; '''
+        '''CREATE TABLE IF NOT EXISTS __template__.__version__('''
+        '''id serial PRIMARY KEY, created_at TIMESTAMP DEFAULT '''
+        '''CURRENT_TIMESTAMP, version VARCHAR(255) NOT NULL);'''
+    )
 
 
-def test_sql_versioner_get_version(versioner_data):
-    versioner, _ = versioner_data
+def test_sql_versioner_get_version(versioner):
     assert versioner.version == ''
+    assert versioner.connection._opened == []
+    assert versioner.connection._closed == []
+    assert versioner.connection._select_statement == (
+        '''SELECT version FROM __template__.__version__ '''
+        '''ORDER BY id DESC LIMIT 1'''
+    )
+
+    def loaded_select(self, statement: str,
+                      parameters: Sequence[Any] = []) -> List[Dict[str, Any]]:
+        return [{'version': '003'}]
+
+    versioner.connection.select = MethodType(
+        loaded_select, versioner.connection)
+    assert versioner.version == '003'
 
 
-def test_sql_versioner_set_version(versioner_data):
-    versioner, _ = versioner_data
+def test_sql_versioner_set_version(versioner):
     versioner.version = '001'
-    versioner.connection.commit()
 
-    assert versioner.version == '001'
+    assert versioner.connection._opened == []
+    assert versioner.connection._closed == []
+    assert versioner.connection._execute_statement == (
+        '''INSERT INTO __template__.__version__ (version) VALUES ($1);'''
+    )
+    assert versioner.connection._execute_parameters == ['001']

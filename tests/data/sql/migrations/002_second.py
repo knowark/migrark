@@ -10,9 +10,8 @@ class Migration:
         self.schema = context['schema']
 
     def schema_up(self) -> None:
-        with self.connection.cursor() as cursor:
-            cursor.execute(
-                f"CREATE TABLE IF NOT EXISTS {self.schema}.accounts("
-                "id serial PRIMARY KEY, "
-                "name VARCHAR(255), "
-                "balance REAL)")
+        self.connection.execute(
+            f"CREATE TABLE IF NOT EXISTS {self.schema}.accounts("
+            "id serial PRIMARY KEY, "
+            "name VARCHAR(255), "
+            "balance REAL)")

@@ -1,6 +1,7 @@
 from pathlib import Path
-from typing import Dict, List, Any
-from abc import ABC, abstractmethod
+from typing import Dict, List, Type, Optional, Any, cast
+from abc import ABC
+from importlib.abc import Loader
 from importlib.util import spec_from_file_location, module_from_spec
 from ..models import Migration
 from .collector import Collector
@@ -20,9 +21,12 @@ class DirectoryCollector(Collector):
 
         return sorted(migrations, key=lambda m: m.version)
 
-    def _load_migration_file(self, path: Path) -> Migration:
+    def _load_migration_file(self, path: Path) -> Optional[Migration]:
         spec = spec_from_file_location(path.stem, str(path))
+        loader = cast(Loader, spec.loader)
         module = module_from_spec(spec)
-        spec.loader.exec_module(module)
-        migration = getattr(module, 'Migration', None)
-        return migration(self.context) if migration else None
+        loader.exec_module(module)
+        if not hasattr(module, 'Migration'):
+            return None
+        migration: Type[Migration] = getattr(module, 'Migration')
+        return migration(self.context)
