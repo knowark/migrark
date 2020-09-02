@@ -9,7 +9,7 @@ class SqlVersioner(Versioner):
         self.schema = context.get('schema', '__template__')
         self.table = context.get('table',  '__version__')
         self.connection: Connection = context['connection']
-        self.placeholder: str = context.get('placeholder', '${index}')
+        self.placeholder: str = context.get('placeholder', '%s')
         self.offset: int = context.get('offset', 1)
         self._setup()
 
@@ -23,7 +23,7 @@ class SqlVersioner(Versioner):
 
         return version
 
-    @ version.setter
+    @version.setter
     def version(self, value: str) -> None:
         index = self.offset
         placeholders = self.placeholder.format(index=index)

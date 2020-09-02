@@ -16,7 +16,7 @@ def test_sql_versioner_instantiation(versioner):
     assert versioner is not None
     assert versioner.schema == "__template__"
     assert versioner.table == "__version__"
-    assert versioner.placeholder == '${index}'
+    assert versioner.placeholder == '%s'
     assert versioner.offset == 1
 
 
@@ -50,6 +50,18 @@ def test_sql_versioner_get_version(versioner):
 
 
 def test_sql_versioner_set_version(versioner):
+    versioner.version = '001'
+
+    assert versioner.connection._opened == []
+    assert versioner.connection._closed == []
+    assert versioner.connection._execute_statement == (
+        '''INSERT INTO __template__.__version__ (version) VALUES (%s);'''
+    )
+    assert versioner.connection._execute_parameters == ['001']
+
+
+def test_sql_versioner_set_version_index_placeholder(versioner):
+    versioner.placeholder = '${index}'
     versioner.version = '001'
 
     assert versioner.connection._opened == []

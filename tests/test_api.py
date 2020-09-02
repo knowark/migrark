@@ -15,7 +15,7 @@ def test_api_sql_migrate(connection):
     assert connection._closed == [True]
 
     assert connection._execute_statement == (
-        'INSERT INTO knowark.__version__ (version) VALUES ($1);'
+        'INSERT INTO knowark.__version__ (version) VALUES (%s);'
     )
     assert connection._execute_parameters == ['001']
 
@@ -31,6 +31,6 @@ def test_api_sql_migrate_last(connection):
     assert connection._closed == [True]
 
     assert connection._execute_statement == (
-        'INSERT INTO knowark.__version__ (version) VALUES ($1);'
+        'INSERT INTO knowark.__version__ (version) VALUES (%s);'
     )
     assert connection._execute_parameters == ['002']
